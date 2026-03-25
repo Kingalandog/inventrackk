@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InvenTrack – Sistema de Inventario</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="logo">Inven<span>Track</span></div>
+    <button class="nav-item active" onclick="showPage('dashboard',this)">📊 <span>Dashboard</span></button>
+    <button class="nav-item" onclick="showPage('inventario',this)">📦 <span>Inventario</span></button>
+    <button class="nav-item" onclick="showPage('alertas',this)">🔔 <span>Alertas</span></button>
+    <button class="nav-item" onclick="showPage('reportes',this)">📈 <span>Reportes</span></button>
+    <div class="sidebar-footer">
+      <div class="user-badge">
+        <div class="avatar">AJ</div>
+        <div class="user-info">
+          <div class="name">Alan Jair</div>
+          <div class="role">Administrador</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">Dashboard <span>General</span></div>
+        <button class="btn btn-primary" onclick="openModal()">+ Nuevo Producto</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Total Productos</div><div class="stat-value green" id="stat-total">0</div><div class="stat-change up">productos registrados</div><div class="stat-icon">📦</div></div>
+        <div class="stat-card"><div class="stat-label">Valor Inventario</div><div class="stat-value blue" id="stat-valor">$0</div><div class="stat-change up">valor total</div><div class="stat-icon">💰</div></div>
+        <div class="stat-card"><div class="stat-label">Stock Bajo</div><div class="stat-value yellow" id="stat-bajo">0</div><div class="stat-change down">requiere atención</div><div class="stat-icon">⚠️</div></div>
+        <div class="stat-card"><div class="stat-label">Sin Stock</div><div class="stat-value red" id="stat-sin">0</div><div class="stat-change down">reabastecer</div><div class="stat-icon">🚨</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Productos Registrados</div>
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" placeholder="Buscar..." oninput="filterTable(this.value)">
+          </div>
+        </div>
+        <table><thead><tr><th>ID</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="table-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- INVENTARIO -->
+    <div class="page" id="page-inventario">
+      <div class="page-header">
+        <div class="page-title">Gestión de <span>Inventario</span></div>
+        <button class="btn btn-primary" onclick="openModal()">+ Agregar</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Todos los Productos</div><span class="muted" id="inv-count"></span></div>
+        <table><thead><tr><th>ID</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Mín.</th><th>Precio</th><th>Proveedor</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="inv-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div class="page" id="page-alertas">
+      <div class="page-header"><div class="page-title">Centro de <span>Alertas</span></div></div>
+      <div class="alerts-list" id="alerts-list"></div>
+    </div>
+
+    <!-- REPORTES -->
+    <div class="page" id="page-reportes">
+      <div class="page-header">
+        <div class="page-title">Reportes <span>ISO/IEC 25000</span></div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Stock por Categoría</div></div>
+          <div class="chart-wrap" id="chart-cats"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Calidad ISO/IEC 25000</div></div>
+          <div class="iso-grid">
+            <div class="iso-item"><div class="iso-name">Funcionalidad</div><div class="iso-score green">92%</div><div class="iso-bar-track"><div class="iso-bar-fill" style="width:92%"></div></div></div>
+            <div class="iso-item"><div class="iso-name">Rendimiento</div><div class="iso-score blue">88%</div><div class="iso-bar-track"><div class="iso-bar-fill" style="width:88%;background:#0ea5e9"></div></div></div>
+            <div class="iso-item"><div class="iso-name">Usabilidad</div><div class="iso-score green">95%</div><div class="iso-bar-track"><div class="iso-bar-fill" style="width:95%"></div></div></div>
+            <div class="iso-item"><div class="iso-name">Seguridad</div><div class="iso-score yellow">78%</div><div class="iso-bar-track"><div class="iso-bar-fill" style="width:78%;background:#f59e0b"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="two-col" style="margin-top:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Comparativa: Antes vs Después</div></div>
+          <div class="chart-wrap">
+            <div class="bar-row"><div class="bar-label">Calidad Inicial</div><div class="bar-track"><div class="bar-fill" style="width:48%;background:#ef4444"></div></div><div class="bar-val">48%</div></div>
+            <div class="bar-row"><div class="bar-label">Tras Mejora</div><div class="bar-track"><div class="bar-fill" style="width:88%"></div></div><div class="bar-val">88%</div></div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;padding:24px">
+          <div class="iso-name">Índice General de Calidad</div>
+          <div style="font-size:3rem;font-family:'Syne',sans-serif;font-weight:800;color:#00e5a0">88%</div>
+          <div class="muted" style="font-size:.85rem">ISO/IEC 25000 – Sistema InvenTrack</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>➕ Nuevo Producto</h3>
+    <div class="form-group"><label>Nombre</label><input type="text" id="f-nombre" placeholder="Ej: Mouse Inalámbrico"></div>
+    <div class="form-group"><label>Categoría</label>
+      <select id="f-cat"><option>Electrónica</option><option>Papelería</option><option>Herramientas</option><option>Limpieza</option><option>Insumos</option></select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label>Stock</label><input type="number" id="f-stock" placeholder="0" min="0"></div>
+      <div class="form-group"><label>Precio ($)</label><input type="number" id="f-precio" placeholder="0" min="0"></div>
+    </div>
+    <div class="form-group"><label>Proveedor</label><input type="text" id="f-prov" placeholder="Nombre del proveedor"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="addProduct()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span>✅</span><span id="toast-msg"></span></div>
+
+<script src="script.js"></script>
+</body>
+</html>
