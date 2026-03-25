@@ -31,18 +31,33 @@
 
   <!-- DASHBOARD -->
   <div class="page active" id="page-dashboard">
-    <div class="topbar">
-      <div class="page-title">Dashboard <span>General</span></div>
-      <button class="btn btn-red" onclick="openModal()">+ Nuevo Poster</button>
+
+    <!-- HERO HEADER -->
+    <div class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <div class="hero-left">
+          <div class="hero-tag">🎬 Sistema de Inventario</div>
+          <div class="hero-title">Poster<span>Track</span></div>
+          <div class="hero-sub">Gestión profesional de posters de películas y series</div>
+        </div>
+        <button class="btn btn-red hero-btn" onclick="openModal()">+ Nuevo Poster</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-num" id="s-total">0</div><div class="hstat-label">Posters</div></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><div class="hstat-num" id="s-valor">$0</div><div class="hstat-label">Valor Total</div></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><div class="hstat-num" id="s-bajo" style="color:#fbbf24">0</div><div class="hstat-label">Stock Bajo</div></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><div class="hstat-num" id="s-sin" style="color:#ef4444">0</div><div class="hstat-label">Agotados</div></div>
+      </div>
     </div>
-    <div class="stats">
-      <div class="stat" style="--c:#e63946"><div class="stat-label">Total Posters</div><div class="stat-num" id="s-total">0</div><div class="stat-sub">en catálogo</div></div>
-      <div class="stat" style="--c:#f4c430"><div class="stat-label">Valor Total</div><div class="stat-num" id="s-valor">$0</div><div class="stat-sub">en inventario</div></div>
-      <div class="stat" style="--c:#fbbf24"><div class="stat-label">Stock Bajo</div><div class="stat-num" id="s-bajo">0</div><div class="stat-sub">posters</div></div>
-      <div class="stat" style="--c:#ef4444"><div class="stat-label">Agotados</div><div class="stat-num" id="s-sin">0</div><div class="stat-sub">sin stock</div></div>
+
+    <div class="dash-body">
+      <div class="section-label">Posters en inventario</div>
+      <div class="poster-grid" id="grid-dash"></div>
     </div>
-    <div class="section-label">Posters en inventario</div>
-    <div class="poster-grid" id="grid-dash"></div>
   </div>
 
   <!-- CATÁLOGO -->
@@ -133,7 +148,7 @@
       </select>
     </div>
     <div class="field">
-      <label>Imagen del Poster (archivo en carpeta img/)</label>
+      <label>Imagen (archivo en carpeta img/)</label>
       <input type="text" id="f-img" placeholder="Ej: darknight.jpg">
     </div>
     <div class="modal-footer">
@@ -144,7 +159,6 @@
 </div>
 
 <div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
-
 <script src="script.js"></script>
 </body>
 </html>

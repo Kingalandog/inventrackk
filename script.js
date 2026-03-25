@@ -13,7 +13,6 @@ let posters = [
 
 let activeChip = 'Todos';
 
-// ── HELPERS ──────────────────────────────────────────
 function stockBadge(s, m) {
   if (s === 0) return `<span class="poster-stock ps-out">Agotado</span>`;
   if (s < m)   return `<span class="poster-stock ps-low">Stock bajo</span>`;
@@ -24,7 +23,6 @@ function fmt(p) {
   return '$' + p.toLocaleString('es-CO');
 }
 
-// ── RENDER GRID ───────────────────────────────────────
 function renderGrid(containerId, arr) {
   const el = document.getElementById(containerId);
   if (!arr.length) {
@@ -36,9 +34,12 @@ function renderGrid(containerId, arr) {
       ${p.badge === 'new' ? '<div class="poster-badge pb-new">NUEVO</div>' : ''}
       ${p.badge === 'hot' ? '<div class="poster-badge pb-hot">🔥 HOT</div>' : ''}
       <div class="poster-img">
-        <img src="img/${p.img}" alt="${p.titulo}" onerror="this.src='https://via.placeholder.com/300x450/1c1c22/6b6b7a?text=Sin+imagen'">
+        <img src="img/${p.img}" alt="${p.titulo}"
+          onerror="this.src='https://via.placeholder.com/300x450/1c1c22/6b6b7a?text=Sin+imagen'">
         <div class="poster-overlay">
-          <button class="pa-del" onclick="del('${p.id}')">Eliminar</button>
+          <div class="overlay-title">${p.titulo}</div>
+          <div class="overlay-meta">${p.genero} · ${p.anio} · ${p.tam}</div>
+          <button class="pa-del" onclick="del('${p.id}')">🗑 Eliminar</button>
         </div>
       </div>
       <div class="poster-info">
@@ -53,7 +54,6 @@ function renderGrid(containerId, arr) {
   `).join('');
 }
 
-// ── STATS ─────────────────────────────────────────────
 function stats() {
   const v = posters.reduce((a, p) => a + p.precio * p.stock, 0);
   document.getElementById('s-total').textContent = posters.length;
@@ -62,7 +62,6 @@ function stats() {
   document.getElementById('s-sin').textContent   = posters.filter(p => p.stock === 0).length;
 }
 
-// ── CHIPS ─────────────────────────────────────────────
 function renderChips() {
   const genres = ['Todos', ...new Set(posters.map(p => p.genero))];
   document.getElementById('chips').innerHTML = genres.map(g => `
@@ -77,7 +76,6 @@ function setChip(g, btn) {
   filterCat(document.getElementById('search-inp').value);
 }
 
-// ── FILTER ────────────────────────────────────────────
 function filterCat(q) {
   let arr = posters;
   if (activeChip !== 'Todos') arr = arr.filter(p => p.genero === activeChip);
@@ -88,7 +86,6 @@ function filterCat(q) {
   renderGrid('grid-cat', arr);
 }
 
-// ── ALERTS ────────────────────────────────────────────
 function buildAlerts() {
   const out = posters.filter(p => p.stock === 0);
   const low = posters.filter(p => p.stock > 0 && p.stock < p.min);
@@ -121,7 +118,6 @@ function buildAlerts() {
   document.getElementById('t-alerts').innerHTML = h;
 }
 
-// ── REPORTES ──────────────────────────────────────────
 function buildReportes() {
   const genres = {};
   posters.forEach(p => { genres[p.genero] = (genres[p.genero] || 0) + p.stock; });
@@ -138,14 +134,12 @@ function buildReportes() {
   document.getElementById('chart-genre').innerHTML = h;
 }
 
-// ── MODAL ─────────────────────────────────────────────
 function openModal()  { document.getElementById('modal').classList.add('open'); }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
 function save() {
   const titulo = document.getElementById('f-titulo').value.trim();
   if (!titulo) { document.getElementById('f-titulo').focus(); return; }
-
   posters.push({
     id:     'P' + String(posters.length + 1).padStart(3, '0'),
     titulo,
@@ -158,7 +152,6 @@ function save() {
     img:    document.getElementById('f-img').value.trim() || 'placeholder.jpg',
     badge:  'new'
   });
-
   refresh();
   closeModal();
   toast('Poster "' + titulo + '" agregado ✅');
@@ -167,7 +160,6 @@ function save() {
   });
 }
 
-// ── DELETE ────────────────────────────────────────────
 function del(id) {
   const i = posters.findIndex(p => p.id === id);
   if (i < 0) return;
@@ -177,7 +169,6 @@ function del(id) {
   toast('"' + nombre + '" eliminado 🗑️');
 }
 
-// ── TOAST ─────────────────────────────────────────────
 function toast(msg) {
   const t = document.getElementById('toast');
   document.getElementById('toast-msg').textContent = msg;
@@ -185,7 +176,6 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ── NAVEGACIÓN ────────────────────────────────────────
 function go(id, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
@@ -196,7 +186,6 @@ function go(id, btn) {
   if (id === 'reportes') buildReportes();
 }
 
-// ── INIT ──────────────────────────────────────────────
 function refresh() {
   stats();
   renderGrid('grid-dash', posters);
