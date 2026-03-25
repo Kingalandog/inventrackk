@@ -1,186 +1,184 @@
-const products = [
-  {id:'P001',name:'Laptop Dell Inspiron',cat:'Electrónica',stock:12,min:5,price:2800000,prov:'Dell Colombia'},
-  {id:'P002',name:'Mouse Inalámbrico',cat:'Electrónica',stock:45,min:10,price:85000,prov:'Logitech SAS'},
-  {id:'P003',name:'Resma Papel A4',cat:'Papelería',stock:3,min:20,price:18000,prov:'Papelería Central'},
-  {id:'P004',name:'Tóner Impresora HP',cat:'Electrónica',stock:0,min:3,price:320000,prov:'HP Inc.'},
-  {id:'P005',name:'Taladro Percutor',cat:'Herramientas',stock:8,min:4,price:245000,prov:'Makita Colombia'},
-  {id:'P006',name:'Detergente Industrial',cat:'Limpieza',stock:30,min:10,price:25000,prov:'Procter & Gamble'},
-  {id:'P007',name:'Cuadernos 100h',cat:'Papelería',stock:4,min:15,price:8500,prov:'Norma S.A.'},
-  {id:'P008',name:'Cable HDMI 2m',cat:'Electrónica',stock:22,min:8,price:32000,prov:'Generic Tech'},
+const COLORS = {
+  'Acción':'#ff6b35','Drama':'#7c3aed','Terror':'#dc2626',
+  'Comedia':'#16a34a','Sci-Fi':'#0ea5e9','Animación':'#f59e0b','Thriller':'#6366f1'
+};
+
+let posters = [
+  {id:'P001',titulo:'Pacific Rim',genero:'Acción',anio:2013,stock:12,min:3,precio:35000,tam:'A2 (42x59cm)',img:'pacific.jpg',badge:'hot'},
+  {id:'P002',titulo:'Pulp Fiction',genero:'Thriller',anio:1994,stock:8,min:3,precio:42000,tam:'A1 (59x84cm)',img:'pull.jpg',badge:''},
+  {id:'P003',titulo:'Snatch',genero:'Comedia',anio:2000,stock:2,min:3,precio:38000,tam:'A2 (42x59cm)',img:'snach.jpg',badge:''},
+  {id:'P004',titulo:'Transformers',genero:'Acción',anio:2007,stock:0,min:3,precio:32000,tam:'A2 (42x59cm)',img:'transfo.jpg',badge:''},
+  {id:'P005',titulo:'Spider-Man',genero:'Acción',anio:2018,stock:15,min:3,precio:45000,tam:'A1 (59x84cm)',img:'s-l1200.jpg',badge:'new'},
 ];
 
+let activeChip = 'Todos';
+
 // ── HELPERS ──────────────────────────────────────────
-function statusBadge(stock, min) {
-  if (stock === 0)    return '<span class="badge badge-out">Sin Stock</span>';
-  if (stock < min)    return '<span class="badge badge-low">Stock Bajo</span>';
-  return '<span class="badge badge-ok">Disponible</span>';
+function stockBadge(s, m) {
+  if (s === 0) return `<span class="poster-stock ps-out">Agotado</span>`;
+  if (s < m)   return `<span class="poster-stock ps-low">Stock bajo</span>`;
+  return `<span class="poster-stock ps-ok">${s} uds</span>`;
 }
 
-function fmtPrice(p) {
+function fmt(p) {
   return '$' + p.toLocaleString('es-CO');
 }
 
-function nextId() {
-  return 'P' + String(products.length + 1).padStart(3, '0');
+// ── RENDER GRID ───────────────────────────────────────
+function renderGrid(containerId, arr) {
+  const el = document.getElementById(containerId);
+  if (!arr.length) {
+    el.innerHTML = `<div style="color:var(--muted);font-size:.85rem;padding:20px">No se encontraron posters.</div>`;
+    return;
+  }
+  el.innerHTML = arr.map(p => `
+    <div class="poster-card">
+      ${p.badge === 'new' ? '<div class="poster-badge pb-new">NUEVO</div>' : ''}
+      ${p.badge === 'hot' ? '<div class="poster-badge pb-hot">🔥 HOT</div>' : ''}
+      <div class="poster-img">
+        <img src="img/${p.img}" alt="${p.titulo}" onerror="this.src='https://via.placeholder.com/300x450/1c1c22/6b6b7a?text=Sin+imagen'">
+        <div class="poster-overlay">
+          <button class="pa-del" onclick="del('${p.id}')">Eliminar</button>
+        </div>
+      </div>
+      <div class="poster-info">
+        <div class="poster-name">${p.titulo}</div>
+        <div class="poster-genre">${p.genero} · ${p.anio}</div>
+        <div class="poster-meta">
+          <span class="poster-price">${fmt(p.precio)}</span>
+          ${stockBadge(p.stock, p.min)}
+        </div>
+      </div>
+    </div>
+  `).join('');
 }
 
 // ── STATS ─────────────────────────────────────────────
-function updateStats() {
-  const total = products.length;
-  const valor = products.reduce((a, p) => a + p.price * p.stock, 0);
-  const bajo  = products.filter(p => p.stock > 0 && p.stock < p.min).length;
-  const sin   = products.filter(p => p.stock === 0).length;
-
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-valor').textContent = fmtPrice(valor);
-  document.getElementById('stat-bajo').textContent  = bajo;
-  document.getElementById('stat-sin').textContent   = sin;
+function stats() {
+  const v = posters.reduce((a, p) => a + p.precio * p.stock, 0);
+  document.getElementById('s-total').textContent = posters.length;
+  document.getElementById('s-valor').textContent = '$' + Math.round(v / 1000) + 'K';
+  document.getElementById('s-bajo').textContent  = posters.filter(p => p.stock > 0 && p.stock < p.min).length;
+  document.getElementById('s-sin').textContent   = posters.filter(p => p.stock === 0).length;
 }
 
-// ── DASHBOARD TABLE ───────────────────────────────────
-function renderTable(data) {
-  document.getElementById('table-body').innerHTML = data.map(p => `
-    <tr>
-      <td class="muted">${p.id}</td>
-      <td style="font-weight:500">${p.name}</td>
-      <td><span class="badge badge-cat">${p.cat}</span></td>
-      <td style="font-weight:600">${p.stock}</td>
-      <td>${fmtPrice(p.price)}</td>
-      <td>${statusBadge(p.stock, p.min)}</td>
-      <td>
-        <button class="action-btn" onclick="deleteProduct('${p.id}')">🗑️</button>
-      </td>
-    </tr>
+// ── CHIPS ─────────────────────────────────────────────
+function renderChips() {
+  const genres = ['Todos', ...new Set(posters.map(p => p.genero))];
+  document.getElementById('chips').innerHTML = genres.map(g => `
+    <button class="chip${g === activeChip ? ' active' : ''}" onclick="setChip('${g}',this)">${g}</button>
   `).join('');
 }
 
-function filterTable(val) {
-  const q = val.toLowerCase();
-  renderTable(products.filter(p =>
-    p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q)
-  ));
+function setChip(g, btn) {
+  activeChip = g;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  filterCat(document.getElementById('search-inp').value);
 }
 
-// ── INVENTARIO ────────────────────────────────────────
-function renderInventario() {
-  document.getElementById('inv-count').textContent = products.length + ' productos';
-  document.getElementById('inv-body').innerHTML = products.map(p => `
-    <tr>
-      <td class="muted">${p.id}</td>
-      <td style="font-weight:500">${p.name}</td>
-      <td><span class="badge badge-cat">${p.cat}</span></td>
-      <td style="font-weight:600">${p.stock}</td>
-      <td class="muted">${p.min}</td>
-      <td>${fmtPrice(p.price)}</td>
-      <td class="muted">${p.prov}</td>
-      <td>${statusBadge(p.stock, p.min)}</td>
-      <td>
-        <button class="action-btn" onclick="deleteProduct('${p.id}')">🗑️</button>
-      </td>
-    </tr>
-  `).join('');
+// ── FILTER ────────────────────────────────────────────
+function filterCat(q) {
+  let arr = posters;
+  if (activeChip !== 'Todos') arr = arr.filter(p => p.genero === activeChip);
+  if (q) arr = arr.filter(p =>
+    p.titulo.toLowerCase().includes(q.toLowerCase()) ||
+    p.genero.toLowerCase().includes(q.toLowerCase())
+  );
+  renderGrid('grid-cat', arr);
 }
 
-// ── ALERTAS ───────────────────────────────────────────
-function renderAlerts() {
-  const out = products.filter(p => p.stock === 0);
-  const low = products.filter(p => p.stock > 0 && p.stock < p.min);
-  let html = '';
-
+// ── ALERTS ────────────────────────────────────────────
+function buildAlerts() {
+  const out = posters.filter(p => p.stock === 0);
+  const low = posters.filter(p => p.stock > 0 && p.stock < p.min);
+  let h = '';
   out.forEach(p => {
-    html += `
-      <div class="alert-item danger">
-        <div class="alert-dot danger"></div>
-        <div class="alert-text">
-          <strong>${p.name} — SIN STOCK</strong>
-          Reabastecimiento urgente. Stock: 0 / Mínimo: ${p.min}
-        </div>
-        <span class="alert-time">Crítico</span>
-      </div>`;
-  });
-
-  low.forEach(p => {
-    html += `
-      <div class="alert-item warn">
-        <div class="alert-dot warn"></div>
-        <div class="alert-text">
-          <strong>${p.name} — Stock Bajo</strong>
-          Stock actual: ${p.stock} / Mínimo requerido: ${p.min}
-        </div>
-        <span class="alert-time">Advertencia</span>
-      </div>`;
-  });
-
-  if (!html) {
-    html = `<div class="alert-item">
-      <div class="alert-text" style="color:var(--accent)">
-        ✅ Todos los productos tienen stock adecuado.
+    h += `<div class="alert-item danger">
+      <div class="alert-ico">🚨</div>
+      <div class="alert-body">
+        <div class="alert-title">${p.titulo} (${p.anio})</div>
+        <div class="alert-desc">Poster agotado — Reabastecer urgente. Tamaño: ${p.tam}</div>
       </div>
+      <div class="alert-chip">Crítico</div>
     </div>`;
-  }
-
-  document.getElementById('alerts-list').innerHTML = html;
+  });
+  low.forEach(p => {
+    h += `<div class="alert-item warn">
+      <div class="alert-ico">⚠️</div>
+      <div class="alert-body">
+        <div class="alert-title">${p.titulo} (${p.anio})</div>
+        <div class="alert-desc">Stock: ${p.stock} uds · Mínimo requerido: ${p.min}</div>
+      </div>
+      <div class="alert-chip">Advertencia</div>
+    </div>`;
+  });
+  if (!h) h = `<div class="alert-item">
+    <div class="alert-body">
+      <div class="alert-title" style="color:#4ade80">✅ Todo en orden — No hay alertas activas.</div>
+    </div>
+  </div>`;
+  document.getElementById('t-alerts').innerHTML = h;
 }
 
 // ── REPORTES ──────────────────────────────────────────
-function renderReportes() {
-  const cats = {};
-  products.forEach(p => {
-    cats[p.cat] = (cats[p.cat] || 0) + p.stock;
+function buildReportes() {
+  const genres = {};
+  posters.forEach(p => { genres[p.genero] = (genres[p.genero] || 0) + p.stock; });
+  const max = Math.max(...Object.values(genres));
+  let h = '';
+  Object.entries(genres).forEach(([g, v]) => {
+    const w = max > 0 ? Math.round(v / max * 100) : 0;
+    h += `<div class="bar-row">
+      <div class="bar-label">${g}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${COLORS[g] || '#e63946'}"></div></div>
+      <div class="bar-val">${v}</div>
+    </div>`;
   });
-  const max = Math.max(...Object.values(cats));
-  const colors = ['var(--accent)','var(--accent2)','var(--warn)','var(--danger)','#a855f7'];
-  let html = '';
-  Object.entries(cats).forEach(([cat, val], i) => {
-    const pct = max > 0 ? Math.round((val / max) * 100) : 0;
-    html += `
-      <div class="bar-row">
-        <div class="bar-label">${cat}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[i % colors.length]}"></div></div>
-        <div class="bar-val">${val}</div>
-      </div>`;
-  });
-  document.getElementById('chart-cats').innerHTML = html;
+  document.getElementById('chart-genre').innerHTML = h;
 }
 
 // ── MODAL ─────────────────────────────────────────────
 function openModal()  { document.getElementById('modal').classList.add('open'); }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
-function addProduct() {
-  const name  = document.getElementById('f-nombre').value.trim();
-  const cat   = document.getElementById('f-cat').value;
-  const stock = parseInt(document.getElementById('f-stock').value)  || 0;
-  const price = parseInt(document.getElementById('f-precio').value) || 0;
-  const prov  = document.getElementById('f-prov').value.trim() || 'Sin proveedor';
+function save() {
+  const titulo = document.getElementById('f-titulo').value.trim();
+  if (!titulo) { document.getElementById('f-titulo').focus(); return; }
 
-  if (!name) { document.getElementById('f-nombre').focus(); return; }
+  posters.push({
+    id:     'P' + String(posters.length + 1).padStart(3, '0'),
+    titulo,
+    genero: document.getElementById('f-genero').value,
+    anio:   parseInt(document.getElementById('f-anio').value) || 2024,
+    stock:  parseInt(document.getElementById('f-stock').value) || 0,
+    min:    3,
+    precio: parseInt(document.getElementById('f-precio').value) || 0,
+    tam:    document.getElementById('f-tam').value,
+    img:    document.getElementById('f-img').value.trim() || 'placeholder.jpg',
+    badge:  'new'
+  });
 
-  products.push({ id: nextId(), name, cat, stock, min: 5, price, prov });
-
-  renderTable(products);
-  updateStats();
+  refresh();
   closeModal();
-  showToast('Producto "' + name + '" guardado ✅');
-
-  ['f-nombre','f-stock','f-precio','f-prov'].forEach(id => {
+  toast('Poster "' + titulo + '" agregado ✅');
+  ['f-titulo','f-anio','f-stock','f-precio','f-img'].forEach(id => {
     document.getElementById(id).value = '';
   });
 }
 
-function deleteProduct(id) {
-  const idx = products.findIndex(p => p.id === id);
-  if (idx === -1) return;
-  const name = products[idx].name;
-  products.splice(idx, 1);
-  renderTable(products);
-  renderInventario();
-  updateStats();
-  showToast('Producto "' + name + '" eliminado 🗑️');
+// ── DELETE ────────────────────────────────────────────
+function del(id) {
+  const i = posters.findIndex(p => p.id === id);
+  if (i < 0) return;
+  const nombre = posters[i].titulo;
+  posters.splice(i, 1);
+  refresh();
+  toast('"' + nombre + '" eliminado 🗑️');
 }
 
 // ── TOAST ─────────────────────────────────────────────
-function showToast(msg) {
+function toast(msg) {
   const t = document.getElementById('toast');
   document.getElementById('toast-msg').textContent = msg;
   t.classList.add('show');
@@ -188,17 +186,21 @@ function showToast(msg) {
 }
 
 // ── NAVEGACIÓN ────────────────────────────────────────
-function showPage(id, btn) {
+function go(id, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   btn.classList.add('active');
-
-  if (id === 'inventario') renderInventario();
-  if (id === 'alertas')    renderAlerts();
-  if (id === 'reportes')   renderReportes();
+  if (id === 'catalogo') { renderGrid('grid-cat', posters); renderChips(); }
+  if (id === 'alertas')  buildAlerts();
+  if (id === 'reportes') buildReportes();
 }
 
 // ── INIT ──────────────────────────────────────────────
-renderTable(products);
-updateStats();
+function refresh() {
+  stats();
+  renderGrid('grid-dash', posters);
+  renderChips();
+}
+
+refresh();
